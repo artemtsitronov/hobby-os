@@ -1,3 +1,5 @@
+![Screenshot](screenshot.png)
+
 # Hobby-OS (Artem Tsitronov)
 
 An attempt to create a working OS in Rust.
