@@ -37,7 +37,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn start_fn() -> ! {
+pub extern "C" fn kmain() -> ! {
     assert!(BASE_REVISION.is_supported()); // is protocol supported?
     if let Some(response) = FRAMEBUFFER.get_response() {
         let screen = response.framebuffers().next();
