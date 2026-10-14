@@ -1,6 +1,53 @@
 use crate::colors::Colors;
 use crate::font::VGA_FONT;
 use crate::framebuffer::Framebuffer;
+use core::fmt::{Arguments, Write};
+use spin::Mutex;
+
+pub static WRITER: Mutex<Option<TextDriver>> = Mutex::new(None);
+
+pub fn init(framebuffer: Framebuffer) {
+    let mut text_driver = TextDriver::new(framebuffer);
+    text_driver.clear();
+    *WRITER.lock() = Some(text_driver);
+}
+
+pub fn set_bg(bg: u32) {
+    if let Some(text_driver) = WRITER.lock().as_mut() {
+        text_driver.set_bg(bg);
+    }
+}
+
+pub fn set_fg(fg: u32) {
+    if let Some(text_driver) = WRITER.lock().as_mut() {
+        text_driver.set_fg(fg);
+    }
+}
+
+pub fn _print(args: Arguments) {
+    if let Some(text_driver) = WRITER.lock().as_mut() {
+        let _ = text_driver.write_fmt(args);
+    }
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($a:tt)*) => {
+        $crate::text_driver::_print(format_args!($($a)*))
+    };
+}
+
+#[macro_export]
+macro_rules! println {
+    () => {
+        $crate::print!("\n")
+    };
+    ($($a:tt)*) => {
+        $crate::print!("{}\n", format_args!($($a)*))
+    };
+}
+
+// ~-no comment-~ //
 
 pub struct TextDriver {
     framebuffer: Framebuffer,
@@ -104,12 +151,6 @@ impl TextDriver {
         }
     }
 
-    pub fn write_str(&mut self, s: &str) {
-        for c in s.chars() {
-            self.put_char(c);
-        }
-    }
-
     pub fn set_bg(&mut self, bg: u32) {
         self.bg = bg;
     }
@@ -117,3 +158,14 @@ impl TextDriver {
         self.fg = fg;
     }
 }
+
+impl Write for TextDriver {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        for c in s.chars() {
+            self.put_char(c);
+        }
+        Ok(())
+    }
+}
+
+unsafe impl Send for TextDriver {}

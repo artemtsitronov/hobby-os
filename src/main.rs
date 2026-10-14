@@ -6,14 +6,13 @@ mod font;
 mod framebuffer;
 mod text_driver;
 
-use colors::Colors;
 use core::{arch::asm, panic::PanicInfo};
 use framebuffer::Framebuffer;
 use limine::{
     BaseRevision,
     request::{FramebufferRequest, RequestsEndMarker, RequestsStartMarker},
 };
-use text_driver::TextDriver;
+use text_driver::{init as text_driver_init, set_bg, set_fg};
 
 // - SO, limine searches for these statics,
 // and they all have #[used] so that the compiler doesn't
@@ -56,33 +55,17 @@ pub extern "C" fn kmain() {
             let height: u64 = framebuffer.height();
             let framebuffer: Framebuffer = Framebuffer::new(addr, pitch, width, height);
 
-            let mut text_driver: TextDriver = TextDriver::new(framebuffer);
+            // -- text driver
+            text_driver_init(framebuffer);
 
-            // Message
-            text_driver.write_str("Hello dear Rustaceans.\n");
-
-            text_driver.set_fg(Colors::RED);
-            text_driver.set_bg(Colors::WHITE);
-            text_driver.write_str("I WAS VICTIM ");
-            text_driver.set_fg(Colors::WHITE);
-            text_driver.set_bg(Colors::BLACK);
-            text_driver.write_str("of the common believe, that I could write an OS.\n");
-            text_driver.set_fg(Colors::BLACK);
-            text_driver.set_bg(Colors::GREEN);
-            text_driver.write_str("So, here we are. HobbyOS. Nothing more.\n");
-            text_driver.set_fg(Colors::WHITE);
-            text_driver.set_bg(Colors::BLACK);
-            text_driver
-                .write_str("This is built with Limine bootloader, and it's my first OS so far.\n");
-            text_driver
-                .write_str("Please go easy on a newbie in oSdEv, who refuses to vibe-code.\n\n");
-
-            text_driver.write_str("If you want to ");
-            text_driver.set_fg(Colors::CYAN);
-            text_driver.write_str("SUPPORT THIS PROJECT");
-            text_driver.set_fg(Colors::WHITE);
-            text_driver.write_str(" then please like the repo in the description :)\n");
-            text_driver.write_str("With love, Artem Tsitronov\n");
+            println!(r" _    _       _     _            ____   _____ ");
+            println!(r"| |  | |     | |   | |          / __ \ / ____|");
+            println!(r"| |__| | ___ | |__ | |__  _   _| |  | | (___  ");
+            println!(r"|  __  |/ _ \| '_ \| '_ \| | | | |  | |\___ \ ");
+            println!(r"| |  | | (_) | |_) | |_) | |_| | |__| |____) |");
+            println!(r"|_|  |_|\___/|_.__/|_.__/ \__, |\____/|_____/ ");
+            println!(r"                           __/ |              ");
+            println!(r"                          |___/               ");
         }
     } else {
         panic!("FRAMEBUFFER ISN'T ALIVE! HE ISN'T BREATHING!");
